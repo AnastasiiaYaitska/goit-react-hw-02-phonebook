@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const ListContact = styled.ul`
   margin-top: 20px;
@@ -10,19 +10,19 @@ export const ListContact = styled.ul`
 
 export const Contact = styled.li`
   display: flex;
-align-items: baseline;
+  align-items: baseline;
   justify-content: space-between;
 `;
 
 export const BtnDelete = styled.button`
-cursor: pointer;
-border: none;
-border-radius: 5px;
-padding: 5px 10px;
-margin-left: auto;
-background-color: #2d76fc;
-color: white;
-&:hover{
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-left: auto;
+  background-color: #2d76fc;
+  color: white;
+  &:hover {
     background: #bbbdbf;
-}
+  }
 `;

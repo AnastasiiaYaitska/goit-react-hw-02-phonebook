@@ -1,99 +1,74 @@
-import { GlobalStyle } from "./GlobalStyle";
-import { nanoid } from "nanoid";
-import { Layout } from "./Layout/Layout";
-import { ContactsForm } from "./ContactForm/ContactForm";
-import { Contacts } from "./ContactList/ContactList";
-import { Filter } from "./Filter/Filter";
-import { Component } from "react";
-import contacts from "./contacts";
+import { GlobalStyle } from './GlobalStyle';
+import { nanoid } from 'nanoid';
+import { Layout } from './Layout/Layout';
+import { ContactsForm } from './ContactForm/ContactForm';
+import { Contacts } from './ContactList/ContactList';
+import { Filter } from './Filter/Filter';
+import { useEffect, useState } from 'react';
+import contactsDefault from './contacts';
 
-
-export class App extends Component{
-  state = {
-  contacts: [],
-  filter:''
+const getInitialContactList = () => {
+  const savedContacts = localStorage.getItem('contacts');
+  if (savedContacts !== null) {
+    const parsedSaveContacts = JSON.parse(savedContacts);
+    return parsedSaveContacts;
   }
+  return contactsDefault;
+};
 
-  componentDidMount() {
-    const savedContacts = localStorage.getItem('contacts');
+export const App = () => {
+  const [contacts, setContacts] = useState(getInitialContactList());
+  const [filter, setFiler] = useState('');
 
-    if (savedContacts !== null) {
-      const unparsedSaveContacts = JSON.parse(savedContacts);
-      this.setState({contacts:unparsedSaveContacts })
-      return;
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = (name, number) => {
+    if (checkNameDuplicate(name)) {
+      return alert(`${name} is already in the contacts `);
     }
-    this.setState({contacts})
-  };
-
-  componentDidUpdate(nextProps, nextState) { 
-    if (nextState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts))
-    }
-  };
-  
-
-  handlerFormSubmit = (name, number) => {
- 
-    if (this.checkNameDuplicate(name)) {
-      return alert( `${name} is already in the contacts ` )
-    };
-    
     const contact = {
       id: nanoid(),
       name,
-      number
+      number,
     };
-
-    this.setState(prevState=>({ contacts: [contact, ...prevState.contacts] }));
+    setContacts(prevState => {
+      return [contact, ...prevState];
+    });
   };
-  
 
-
-  checkNameDuplicate = (name) => {
-   
-    return  this.state.contacts.some(contact => contact.name.toLowerCase() === name.toLowerCase());
-   
-   };
-  
-  
-  
-  handlerFilter = (event) => {
-    this.setState({filter: event.target.value})
+  const checkNameDuplicate = name => {
+    return contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
   };
-  
 
-  
-  getFilteredContacts = () => {
-    const { contacts, filter } = this.state;
-
-    return contacts.filter(({name})=>name.toLowerCase().includes(filter.toLowerCase()))
+  const addFilter = e => {
+    setFiler(e.target.value);
   };
-  
 
+  const filterContacts = () => {
+    return contacts.filter(({ name }) =>
+      name.toLowerCase().includes(filter.toLowerCase())
+    );
+  };
 
-  handlerContactDelete = (contactId) => {
-    this.setState(prevState => {
-      return { contacts: prevState.contacts.filter(contact => contact.id !== contactId) }
-    })
-   };
-  
-  
-  
-  render() {
-    const { filter } = this.state;
-    const filteredContacts = this.getFilteredContacts();
+  const deleteContact = contactId => {
+    const updateContacts = contacts.filter(contact => contact.id !== contactId);
+    setContacts(updateContacts);
+  };
 
-    return (
-      <Layout>
-        <h1>Phonebook</h1>
-        <ContactsForm onSubmit={this.handlerFormSubmit} />
-        
-        <h2>Contacts</h2>
-        <Filter value={filter} onChange={this.handlerFilter} />
-        <Contacts Contacts={filteredContacts}
-          deleteContact={this.handlerContactDelete } />
-      <GlobalStyle/>
+  const filteredContacts = filterContacts();
+  return (
+    <Layout>
+      <h1>Phonebook</h1>
+      <ContactsForm onSubmit={addContact} />
+
+      <h2>Contacts</h2>
+      <Filter value={filter} onChange={addFilter} />
+      <Contacts Contacts={filteredContacts} deleteContact={deleteContact} />
+      <GlobalStyle />
     </Layout>
-    )
-  }
+  );
 };
